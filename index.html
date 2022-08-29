@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=0,viewport-fit=cover" />
+    <title>长图裁切-加水印</title>
+    <style>
+        *,html{
+            padding: 0;
+            margin: 0;
+            box-sizing: border-box;
+        }
+        body{
+            overflow: scroll;
+        }
+        canvas{
+            border: solid 2px red;
+        }
+        .start{
+            width: 180px;            
+            padding: 5px 0;
+            font-size: 16px;
+            position: absolute;
+            right: 10px;
+            top: 5px;
+        }
+        .online_url{
+            width: calc(100% - 300px);
+        }
+    </style>
+</head>
+<body>
+    <div style="position: relative;height: 100px;padding: 10px;">
+        <div>
+            网络图片 <input class="online_url" type="text" value='' placeholder="请输入图片的网络地址" />
+        </div>
+        <div style="margin-top:20px">
+            本地图片 <input class="file" type="file" >
+        </div>
+    
+        <button class="start">开始剪裁</button>
+    </div>
+    <hr>
+    
+    <script type="module">
+        import IC from './index.js'
+        let clipper = new IC({
+            watermark:{
+                content: "Created by Longimage-cutter",
+                x: 100,
+                y: 100,
+                font: '30px italic bold cursive',
+                color: "white"
+            },
+            success: (data)=>{
+                console.log(data)
+            },
+            fail:err=>{
+                console.error(err)
+            }
+        });
+
+        function getOnlineUrl(){
+            let url = document.querySelector('.online_url').value;
+            if(!url){
+                alert('请输入网络图片地址或者选择本地图片直接裁剪')
+                throw new Error('网络图片地址不能为空');
+            }
+            return url
+        }
+
+        // 裁剪-本地图片
+        document.querySelector('.file').addEventListener('change',(e)=>{
+            let file = e.target.files[0];
+            var fReader = new FileReader();
+
+            fReader.readAsDataURL(file);
+            fReader.onload = function (frEvt) {
+                let imgData = frEvt.target.result;
+                clipper.pipeTask({
+                    src: imgData,
+                    height: 1920,
+                    filename: 'zaoyang_intro_part',
+                });
+            };
+        })
+
+        // 裁剪-网络图片
+        document.querySelector('.start').addEventListener('click',(e)=>{
+            clipper.pipeTask({
+                src: getOnlineUrl(),
+                width: 1080, //不指定则按照图片本身宽度进行裁剪
+                height: 1920,
+                filename: 'zaoyang_intro_part'
+            });
+        })
+    </script>
+</body>
+</html>
